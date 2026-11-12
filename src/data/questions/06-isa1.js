@@ -1,0 +1,40 @@
+import { R, Q } from '../../utils/dsl.js';
+
+export const id = 'isa1';
+export default [
+    Q({ id: 'ps1q6a', kind: 'off', src: 'Practice Set 1, Q6a', diff: 'M', taught: 'L05 s18–s19', q: R`<p>h is in $s0; the base of array A is in $s1 and of array B in $s2. Write MIPS for <code>B[6] = h – A[4] + B[2];</code> using as few temporary registers ($t0–$t4) as possible.</p>`, ans: 'lw $t0, 8($s2) · lw $t1, 16($s1) · sub $t1, $s0, $t1 · add $t0, $t0, $t1 · sw $t0, 24($s2)',
+      steps: [[R`\texttt{lw \$t0, 8(\$s2)}`, 'B[2]: offset 2 × 4 = 8 from B’s base.'], [R`\texttt{lw \$t1, 16(\$s1)}`, 'A[4]: offset 4 × 4 = 16 from A’s base.'], [R`\texttt{sub \$t1, \$s0, \$t1}`, 'h − A[4]. Reusing $t1 keeps the temporaries to two.'], [R`\texttt{add \$t0, \$t0, \$t1}`, 'B[2] + (h − A[4]).'], [R`\texttt{sw \$t0, 24(\$s2)}`, 'Store into B[6]: offset 6 × 4 = 24.']],
+      official: 'ld $t0, 8($s2) (Remember in MIPS machine each address is multiple of 4 thus offset 4x2=8)\nld $t1, 16($s1) (Remember in MIPS machine each address is multiple of 4 thus offset 4x4=16)\nsub $t2, $s0, $t1   (This denotes h-A[4], where h is in $s0)\nadd $t3, $t0, $t2   (This denotes h-A[4] + B[2])\nsw $t3, 24($s2)     store the result to B[6]', offNote: 'The official answer writes "ld" (use lw — L05 s15) and uses four temporaries; reusing $t0/$t1 as above meets "as few as possible" better. Both compute the same value.' }),
+    Q({ id: 'ps1q6b', kind: 'off', src: 'Practice Set 1, Q6b', diff: 'M', taught: 'L05 s12, s18, s21', q: R`<p>g, h, i, j are in $s0, $s2, $s3, $s4; the base of A is in $s5. What C statement does this code implement?</p><pre class="code nomath">addi $s0, $s0, -4
+add  $s0, $s0, $s2
+add  $s0, $s0, $s3
+sub  $s0, $s0, $s4
+sw   $s0, 24($s5)</pre>`, ans: 'A[6] = g − 4 + h + i − j;',
+      steps: [['addi: g − 4', 'Adding −4 subtracts 4 (no subi).'], ['add, add: + h + i', '$s2 = h, $s3 = i.'], ['sub: − j', '$s4 = j.'], ['sw …, 24($s5): A[24 / 4] = A[6]', 'Offset 24 bytes ÷ 4 bytes per word = index 6.']],
+      official: 'A[6] = g - 4 + h + i - j' }),
+    Q({ id: 'ptq3', kind: 'off', src: 'Practice Test, Q3 [10 points]', diff: 'M', taught: 'L05 s18–s19', q: R`<p>f is in $s0; the base of A is in $s1 and of B in $s2. Write MIPS for <code>A[4] = B[8] + f - A[2];</code> using any of $t0–$t3.</p>`, ans: 'lw $t0, 8($s1) · lw $t1, 32($s2) · sub $t2, $s0, $t0 · add $t3, $t1, $t2 · sw $t3, 16($s1)',
+      steps: [[R`\texttt{lw \$t0, 8(\$s1)}`, 'A[2]: 2 × 4 = 8.'], [R`\texttt{lw \$t1, 32(\$s2)}`, 'B[8]: 8 × 4 = 32.'], [R`\texttt{sub \$t2, \$s0, \$t0}`, 'f − A[2].'], [R`\texttt{add \$t3, \$t1, \$t2}`, 'B[8] + f − A[2].'], [R`\texttt{sw \$t3, 16(\$s1)}`, 'A[4]: 4 × 4 = 16.']],
+      official: 'ld $t0, 8($s1)\nld $t1, 32($s2)\nsub $t2, $s0, $t0   (This denotes f-A[2], where f is in $s0)\nadd $t3, $t1, $t2   (This denotes B[8] + f - A[2])\nsw $t3, 16($s1)     (store the result to A[4]', offNote: 'Again "ld" in the official answer; the MIPS instruction taught is lw.' }),
+    Q({ id: 'l05s19', kind: 'off', src: 'Lecture example, L05 s19', diff: 'E', taught: 'L05 s19', q: '<p>For A[12] = h + A[8], "index 12 — how much?" What offset is used in the store?</p>', ans: '48: sw $t0, 48($s3)',
+      steps: [[R`12 \times 4 = 48`, 'Each word is 4 bytes.']], official: 'lw $t0, 32($s3) # load word\nadd $t0, $s2, $t0\nsw $t0, 48($s3) # store word' }),
+    Q({ id: 'r1s14', kind: 'off', src: 'Review slides R1 s14', diff: 'M', taught: 'L05 s18–s19', q: R`<p>Verify the translation of <code>A[12] = h + A[8];</code> and explain what is wrong:</p><pre class="code nomath">lw  $t0, 28($s3)   # load word
+add $t0, $s2, $t0
+sw  $t0, 48($s3)   # store word</pre>`, ans: 'The load offset should be 4 × 8 = 32, not 28.',
+      steps: [['Check each offset: index × 4.', 'Words are 4 bytes (L05 s17).'], [R`A[8] \to 32 \ne 28`, '28 would load A[7].'], [R`A[12] \to 48\ \checkmark`, 'The store is correct.']],
+      official: 'The issue above is that instead of 28 as offset in first load we need 4*8=32' }),
+    Q({ id: 'r1s13', kind: 'off', src: 'Review slides R1 s13', diff: 'E', taught: 'L05 s8–s9, s15', q: R`<p>For <code>add $s1, $t1, $t2</code> and <code>lw $t0, 32($s3)</code>, give the opcode, the source(s) and the destination.</p>`, ans: 'add: sources $t1, $t2 → destination $s1. lw: base $s3, offset 32 → destination $t0.',
+      steps: [['add: opcode add; sources $t1, $t2; destination $s1.', 'Destination is the first operand.'], ['lw: opcode lw; source/base address $s3; offset 32; destination $t0.', 'Address = $s3 + 32; the loaded word goes into $t0.']],
+      official: 'e.g., add s1, t1, t2: opcode=add, source: $t1 and $t2 , destination: $s1\ne.g., lw $t0, 32($s3): opcode:lw, source/base address: $s3, dest: $t0 offset: 32' }),
+    Q({ id: 'ai-a3', kind: 'ai', diff: 'M', taught: 'L05 s18–s19', q: R`<p>h is in $s2 and the base of A is in $s3. Write MIPS for <code>A[3] = A[5] - h;</code></p>`, ans: 'lw $t0, 20($s3) · sub $t0, $t0, $s2 · sw $t0, 12($s3)',
+      steps: [[R`\texttt{lw \$t0, 20(\$s3)}`, 'A[5] → 5 × 4 = 20.'], [R`\texttt{sub \$t0, \$t0, \$s2}`, 'A[5] − h: order matters in sub.'], [R`\texttt{sw \$t0, 12(\$s3)}`, 'A[3] → 3 × 4 = 12.']] }),
+    Q({ id: 'ai-endian', kind: 'ai', diff: 'M', taught: 'L05 s17', q: R`<p>The word 0xCAFEF00D is stored at address 200 on MIPS. Which byte is at each of addresses 200–203? What would address 200 hold on a little-endian machine?</p>`, ans: '200: CA, 201: FE, 202: F0, 203: 0D. Little-endian: 0D at 200.',
+      steps: [['Bytes: CA FE F0 0D (most → least significant).', 'Split the 8 hex digits into pairs.'], ['Big-endian: CA at 200, FE at 201, F0 at 202, 0D at 203.', 'MSB at the lowest address (L05 s17).'], ['Little-endian: 0D at 200 … CA at 203.', 'LSB at the lowest address.']] }),
+    Q({ id: 'ai-5', kind: 'ai', diff: 'E', taught: 'L05 s14', q: '<p>Why does MIPS use 5 bits for each register field? How many bits would 64 registers need?</p>', ans: R`\(2^5 = 32\) registers; 64 registers need 6 bits.`,
+      steps: [[R`2^5 = 32`, 'n bits give 2ⁿ patterns; 32 registers need exactly 5.'], [R`2^6 = 64 \Rightarrow 6\ \text{bits}`, R`\(\log_2 64 = 6\).`]] }),
+    Q({ id: 'ai-cisc', kind: 'ai', diff: 'E', taught: 'L05 s6; R1 [40:53]', q: '<p>Classify x86, MIPS and ARM as CISC or RISC, and give two differences between CISC and RISC.</p>', ans: 'x86 CISC; MIPS, ARM RISC. E.g. CISC instructions can access memory directly and vary in length; RISC is load/store with fixed-length instructions.',
+      steps: [['x86 = CISC; MIPS and ARM = RISC.', 'L05 s6, R1 [40:53].'], ['Memory: CISC memory-to-memory; RISC register-to-register with separate LOAD/STORE.', 'L05 s6 row 2.'], ['Cycles/size: CISC multi-clock instructions, small code; RISC single-clock, larger code.', 'L05 s6 rows 1 and 3.']] }),
+    Q({ id: 'w-6', kind: 'wild', src: 'Wildcard · spot the error', diff: 'H', taught: 'L05 s17–s18', q: R`<p>A student loads A[6] (base in $s3) with <code>lw $t0, 6($s3)</code>. What goes wrong, assuming $s3 holds an aligned address?</p>`, ans: 'Offset must be 24; with 6 the address isn’t a multiple of 4, so it is an unaligned word access (and the wrong element anyway).',
+      steps: [[R`6 \times 4 = 24`, 'Byte offset for index 6.'], [R`\$s3 + 6`, 'If $s3 is a multiple of 4, adding 6 gives an address that is not — words must be aligned (L05 s17).'], ['Fix: lw $t0, 24($s3).', 'Try it in the register & memory view: the simulator reports the alignment error.']] }),
+    Q({ id: 'w-subi', kind: 'wild', src: 'Wildcard · explain why', diff: 'M', taught: 'L05 s21', q: '<p>MIPS has no subi. How do you compute $s1 = $s2 − 7, and why is leaving out subi a reasonable design choice?</p>', ans: 'addi $s1, $s2, -7. A negative immediate does the job, so a separate instruction would add complexity for no gain.',
+      steps: [[R`\texttt{addi \$s1, \$s2, -7}`, 'The immediate is a signed 16-bit number.'], ['Fewer instructions keep decoding simple (regularity) while the common case — small constants — stays fast.', 'L05 s21: make the common case fast; L05 s10: regularity.']] }),
+  ];

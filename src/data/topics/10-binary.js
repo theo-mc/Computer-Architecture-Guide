@@ -1,0 +1,112 @@
+import { R, B } from '../../utils/dsl.js';
+
+export default {
+  id: 'binary', num: 10, file: 'binary-arithmetic', week: 3, lectures: ['L08'],
+  title: "Binary arithmetic: unsigned, two's complement, overflow, sign extension", short: "Binary & two's complement",
+  keywords: 'binary unsigned signed two complement sign bit negate invert add one overflow carry sign extension hex addition addu',
+  taught: 'L08 s1–s13 (Week 3). Reviewed R1 s15. Practised in PS2 Q3–Q4.',
+  overview: {
+    lede: "The same bits mean different numbers depending on the convention. Read and write unsigned and two's complement numbers, add and subtract them, spot overflow, and sign-extend.",
+    about: R`<p>Bits have no meaning of their own: <code>11111111</code> is 255 unsigned or −1 in two's complement. Two's complement wins in hardware because subtraction becomes addition, so one adder does both. You'll convert in every direction, add and subtract with carries, decide when the result has overflowed, and widen numbers with sign extension (which is how addi's 16-bit constant becomes 32 bits).</p>`,
+    canDo: ['Convert between binary, decimal and hex for unsigned and two’s complement numbers.', 'State the ranges for n bits.', 'Negate a number with invert-and-add-1.', 'Add and subtract binary numbers, showing carries.', 'Detect overflow using the sign rules, and say what MIPS does about it.', 'Sign-extend a value correctly.'],
+    buildsOn: ['encoding'],
+  },
+  notation: [
+    [R`\(n\)`, 'Number of bits', 'e.g. 8, 32'],
+    [R`\(x_i\)`, 'Bit number i (0 = rightmost / least significant)', R`notation \(b_{31} \ldots b_0\)`],
+    ['MSB / LSB', 'Most / least significant bit (leftmost / rightmost)', ''],
+    [R`\(2^n\)`, 'Number of different patterns n bits can make', R`\(2^8 = 256\)`],
+    [R`\(\overline{B}\)`, 'B with every bit inverted (0 ↔ 1)', ''],
+    ['carry', 'The 1 passed to the next column when a column sums to 2 or 3', ''],
+    ['overflow', 'The true result doesn’t fit in n bits', ''],
+    ['EPC', 'Exception program counter: saves the PC when an exception occurs', 'L08 s12'],
+    ['sign extension', 'Widening a number by copying its sign bit into the new left bits', 'L08 s13'],
+  ],
+  steps: [
+    { title: 'Bits are just bits', ref: 'L08 s4–s5', blocks: [
+      B.p('S', 'L08 s4–s5', R`<p>Numbers can be integers or floating point, unsigned or signed. n bits give \(2^n\) unique combinations. "Bits are just bits (no inherent meaning) — conventions define the relationship between bits and numbers."</p>`),
+      B.wk({ src: 'L', ref: 'L08 [5:19]–[7:50]', title: '11111111 as unsigned and as signed', steps: [
+        [R`\(\text{unsigned}: 2^7 + 2^6 + \dots + 2^1 + 2^0 = 128 + 64 + 32 + 16 + 8 + 4 + 2 + 1 = 255\)`, 'Every bit has a positive weight.'],
+        [R`\(\text{two's complement}: -2^7 + (2^6 + \dots + 2^0) = -128 + 127 = -1\)`, 'The MSB has a negative weight.'],
+      ], result: 'Same 8 bits: 255 or −1.' }),
+      B.x(R`<p>This is the most important idea in the topic: a register just holds a pattern of 0s and 1s. Whether <code>11111111</code> “is” 255 or −1 depends on which <b>convention</b> the instruction uses to read it. The hardware adder doesn't care — the same addition circuit works for both, which is exactly why two's complement was chosen.</p>`),
+    ] },
+    { title: 'Unsigned integers', ref: 'L08 s5', blocks: [
+      B.x(R`<p>Decimal 352 means 3 hundreds + 5 tens + 2 ones: each place is worth 10 times the place to its right. Binary is the same with 2 instead of 10: from the right the places are worth 1, 2, 4, 8, 16, 32, 64, 128 … (that is \(2^0, 2^1, 2^2, \dots\)). To read a binary number, add up the place values that have a 1 under them.</p>`),
+      B.p('S', 'L08 s5', R`\[x = x_{n-1}2^{n-1} + x_{n-2}2^{n-2} + \dots + x_1 2^1 + x_0 2^0\]<p>Range: \(0\) to \(2^n - 1\). With 32 bits: 0 to 4,294,967,295. Example: \(0000\ldots1011_2 = 1\times2^3 + 0\times2^2 + 1\times2^1 + 1\times2^0 = 8 + 0 + 2 + 1 = 11\).</p>`),
+    ] },
+    { title: "Two's complement", ref: 'L08 s6–s7', blocks: [
+      B.p('S', 'L08 s6', R`\[x = -x_{n-1}2^{n-1} + x_{n-2}2^{n-2} + \dots + x_1 2^1 + x_0 2^0\]<p>Range: \(-2^{n-1}\) to \(2^{n-1} - 1\). With 32 bits: −2,147,483,648 to +2,147,483,647.</p>`),
+      B.wk({ src: 'S', ref: 'L08 s6', title: '1111 1111 1111 1111 1111 1111 1111 1100₂', steps: [
+        [R`\(-1\times2^{31} + 1\times2^{30} + \dots + 1\times2^2 + 0\times2^1 + 0\times2^0\)`, 'MSB weight is negative.'],
+        [R`\(= -2{,}147{,}483{,}648 + 2{,}147{,}483{,}644\)`, R`The positive bits 2 to 30 add up to \(2^{31} - 4\).`],
+        [R`\(= -4\)`, R`−2,147,483,648 + 2,147,483,644: the positive part is 4 smaller than the negative part.`],
+      ] }),
+      B.p('S', 'L08 s7', R`<ul><li>Bit 31 is the <b>sign bit</b>: 1 = negative, 0 = non-negative.</li><li>Non-negative numbers have the same representation in unsigned and two's complement.</li><li>0 = 0000…0000; −1 = 1111…1111; most negative = 1000…0000; most positive = 0111…1111. (The most negative number has no positive partner.)</li><li><b>Trick:</b> to negate, <b>invert the bits and add 1</b>. −6: 000…0110 → 111…1001 → +1 → 111…1010.</li></ul>`),
+      B.fx('twos'),
+      B.analogy('A car’s mileage counter', R`<p>An old 4-digit odometer reading 0000 that rolls <i>backwards</i> one mile shows 9999. Two's complement uses the same trick in binary: one less than 0000 is 1111, so 1111 is treated as −1, 1110 as −2, and so on. The number wheel in the Number lab (choose 4-bit) shows this circle: the outer ring reads the patterns as unsigned, the inner ring as two's complement.</p>`),
+      B.key('Negating: invert and add 1', R`<p>To get −x from x: flip every bit, then add 1. −6 in 8 bits: 6 = 0000 0110 → invert 1111 1001 → +1 = <b>1111 1010</b>. The same steps turn a negative number back into its size: 1111 1010 → 0000 0101 → +1 = 0000 0110 = 6.</p>`),
+      B.fx('negate'),
+      B.tool('numlab', { n: 8, a: '-6', tab: 'convert' }),
+      B.check(R`<p>What is the 8-bit two's complement pattern for −1, and for the most negative 8-bit number? What are they in decimal?</p>`, R`<p>−1 = 1111 1111 (all ones). Most negative = 1000 0000 = −128 (only the −2⁷ weight is set). The range is −128 … 127, so +128 does not exist in 8 bits.</p>`),
+      B.p('S', 'L08 s8', R`<p><b>Why two's complement?</b> It makes hardware simpler, especially subtraction. "Just like humans don't work with Roman numerals": the representation affects the ease of calculation, not the correctness of the answer.</p>`),
+    ] },
+    { title: 'Addition and subtraction', ref: 'L08 s9–s10', blocks: [
+      B.wk({ src: 'L', ref: 'L08 s9; L08 [19:21]–[24:08]', title: '0011 + 1010 (4 bits), read both ways', steps: [
+        [R`\(\begin{array}{r} 0011 \\ +\,1010 \\ \hline 1101 \end{array}\)`, 'Right to left: 1+0 = 1; 1+1 = 10 (write 0, carry 1); 0+0+1 = 1; 0+1 = 1.'],
+        [R`\(\text{unsigned}: 3 + 10 = 13 = 1101_2\ \checkmark\)`, '8 + 4 + 1 = 13.'],
+        [R`\(\text{signed}: 3 + (-6) = -3;\ \ 1101 \to \text{invert } 0010 \to +1 = 0011 = 3,\ \text{so } -3\ \checkmark\)`, '1010 is −6; 1101 has MSB 1 so it is negative; invert-and-add-1 gives its magnitude.'],
+      ], result: 'The adder does the same thing either way; the instruction (add vs addu) decides how overflow is treated.' }),
+      B.wk({ src: 'S', ref: 'L08 s10; L08 [25:16]–[29:00]', title: '3 − 2 (4 bits) as 3 + (−2)', steps: [
+        [R`\(3 = 0011,\ \ 2 = 0010\)`, R`3 = 2 + 1 and 2 = 2, written as 4-bit binary.`],
+        [R`\(-2:\ 0010 \to \text{invert } 1101 \to +1 = 1110\)`, 'A − B = A + (two’s complement of B).'],
+        [R`\(0011 + 1110 = 1\,0001\)`, 'Add normally.'],
+        [R`\(\text{keep 4 bits: } 0001 = 1\)`, 'The carry out of the top is dropped.'],
+      ], result: '3 − 2 = 1, using only an adder.' }),
+      B.x(R`<p>Use the adder below with the <b>Step through columns</b> button: each press explains one column (bit + bit + carry-in → sum bit and carry-out). In 4-bit mode the wheel shows the addition as a clockwise move round the circle.</p>`),
+      B.tool('numlab', { n: 4, a: '0b0011', b: '0b1010', op: 'add', tab: 'add' }),
+    ] },
+    { title: 'Overflow', ref: 'L08 s11–s12', blocks: [
+      B.x(R`<p>A 4-bit register can only hold 16 patterns. If the true answer needs more, the extra bit falls off and the stored result is wrong. For <b>unsigned</b> numbers that shows up as a carry out of the top bit. For <b>two's complement</b> it shows up differently: the result has the <b>wrong sign</b>.</p>`),
+      B.p('S', 'L08 s11', R`<p>Overflow: the result is too large for the finite word — e.g. adding two n-bit numbers doesn't give an n-bit number (0111 + 1001 = 10000 needs 5 bits as unsigned). For two's complement:</p><ul><li><b>No overflow</b> when adding a positive and a negative number.</li><li><b>No overflow</b> when signs are the same for subtraction.</li><li><b>Overflow</b> when the value affects the sign: two positives give a negative; two negatives give a positive; positive − negative gives a negative; negative − positive gives a positive.</li></ul>`),
+      B.key('Overflow rules at a glance (two’s complement)', R`<table class="t"><thead><tr><th>Operation</th><th>Overflow possible?</th><th>It happened if…</th></tr></thead><tbody><tr><td>positive + positive</td><td>yes</td><td>result is negative</td></tr><tr><td>negative + negative</td><td>yes</td><td>result is positive</td></tr><tr><td>positive + negative</td><td>never</td><td>—</td></tr><tr><td>positive − negative</td><td>yes</td><td>result is negative</td></tr><tr><td>negative − positive</td><td>yes</td><td>result is positive</td></tr><tr><td>same signs, subtracted</td><td>never</td><td>—</td></tr></tbody></table><p>A carry out of the top bit on its own does <b>not</b> mean signed overflow — that's the unsigned rule.</p>`),
+      B.p('L', 'L08 [32:15]', R`<p>Why can't positive + negative overflow? "The result must lie somewhere between these two input values", so it always fits.</p>`),
+      B.p('S', 'L08 s12', R`<p>What happens depends on the system and language. Some ignore overflow — MIPS <code>addu</code>, <code>addiu</code>, <code>subu</code>. Others (e.g. Fortran) need an <b>exception</b>: on overflow, save the PC in the <b>EPC</b> (exception program counter) register, jump to a predefined handler address, correct and resume.</p>`),
+      B.dis({ id: 'addui', title: '"addui" on L08 s12', items: [['Slide L08 s12', '"e.g. MIPS addu, addui, subu instructions" ignore overflow.'], ['Lecture recording L08 [33:19]', '"like the add U, sorry, here should be add IU, and also the sub U."'], ['MIPS green card / P&H Ch. 2', 'The instruction is addiu (add immediate unsigned); there is no addui.']], likely: 'addiu. The lecturer corrected the slide in the recording.' }),
+    ] },
+    { title: 'Sign extension', ref: 'L08 s13', blocks: [
+      B.p('S', 'L08 s13', R`<p>Representing a number with more bits while preserving its value. In MIPS, <code>addi</code> extends its 16-bit immediate to 32 bits. <b>Replicate the sign bit to the left</b> (unsigned values: extend with 0s). 8 → 16 bits: +2: 0000 0010 → 0000 0000 0000 0010; −2: 1111 1110 → 1111 1111 1111 1110.</p>`),
+      B.x(R`<p>Why copy the sign bit? A negative number has 1s “all the way up” in two's complement — 1111 1110 is −2, and so is 1111 1111 1111 1110 in 16 bits. Filling with 0s instead would turn −2 into 65 534. For unsigned numbers the hidden upper bits are 0, so zero-extension preserves the value.</p>`),
+      B.tool('numlab', { n: 8, a: '-2', tab: 'ext', to: 16 }),
+    ] },
+    { title: 'Hex arithmetic on 32-bit registers (PS2 Q4)', ref: 'PS2 Q4; L08 s9–s11', blocks: [
+      B.wk({ src: 'O', ref: 'PS2 Q4a', title: '$s0 = 0x82A00000, $s1 = 0xDA600000: add $t0, $s0, $s1', steps: [
+        [R`\(\texttt{0x82A00000} + \texttt{0xDA600000}\): add \(\texttt{82A} + \texttt{DA6}\), then put the five zeros back`, 'Only the first three hex digits are non-zero, and 0 + 0 = 0 in every other column.'],
+        [R`\(\texttt{A} + \texttt{6} = 10 + 6 = 16 = \texttt{0x10}\) → write 0, carry 1`, 'Rightmost column. In hex, 16 is "10": digit 0, carry 1.'],
+        [R`\(\texttt{2} + \texttt{A} + 1 = 2 + 10 + 1 = 13 = \texttt{D}\) → write D, no carry`, 'Middle column, including the carry.'],
+        [R`\(\texttt{8} + \texttt{D} = 8 + 13 = 21 = 16 + 5 = \texttt{0x15}\) → write 5, carry 1`, 'Left column; the final carry becomes a new leading digit 1.'],
+        [R`\(\texttt{82A} + \texttt{DA6} = \texttt{15D0} \;\Rightarrow\; \texttt{0x15D000000}\)`, 'Check in decimal: 2090 + 3494 = 5584 = 0x15D0. With the five zeros the full sum has 9 hex digits — it needs 33 bits.'],
+        [R`\(\$t0 = \texttt{0x5D000000}\)`, 'Only 32 bits fit; the leading 1 is lost.'],
+        [R`\(\text{both inputs negative (MSB 1), result positive (5 = 0101)} \Rightarrow \text{overflow}\)`, 'Two negatives giving a positive is the overflow rule (L08 s11). add would raise an exception; addu would ignore it.'],
+      ], result: '0x5D000000, with signed overflow.' }),
+      B.tool('numlab', { n: 32, a: '0x82A00000', b: '0xDA600000', op: 'add', tab: 'add' }),
+    ] },
+  ],
+  keyPoints: [
+    R`Unsigned n bits: \(0 \ldots 2^n - 1\). Two’s complement: \(-2^{n-1} \ldots 2^{n-1}-1\).`,
+    R`Two’s complement: MSB weighs \(-2^{n-1}\); MSB 1 means negative.`,
+    'Negate: invert all bits, add 1. −1 = all 1s; most negative = 1000…0.',
+    'A − B = A + (−B): one adder does both.',
+    'Signed overflow only when the sign comes out wrong (two positives → negative, etc.); never for positive + negative.',
+    'addu/addiu/subu ignore overflow; add/addi/sub can raise an exception (EPC saves the PC).',
+    'Sign extension copies the sign bit; unsigned extension pads with 0s.',
+  ],
+  traps: [
+    '<b>Reading a negative number as unsigned.</b> Check the MSB first: 10001101 is −115 (signed) but 141 (unsigned).',
+    '<b>Inverting without adding 1</b> gives the one’s complement, off by one.',
+    '<b>Overflow ≠ carry out.</b> 0111 + 1001 carries out but has no signed overflow (7 + (−7) = 0).',
+    '<b>Range asymmetry.</b> 8 bits go to −128 but only +127.',
+    '<b>Padding negatives with 0s</b> when extending changes the value — copy the sign bit.',
+    '<b>Hex column sums.</b> 8 + A = 18 = 0x12, not "18".',
+  ],
+  };

@@ -1,0 +1,100 @@
+/* Bundled local Hurmit Nerd Font (extracted from original single-file bundle) */
+@font-face {
+  font-family: "Hurmit Nerd Font";
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url(../assets/fonts/hurmit-regular.woff2) format("woff2");
+}
+@font-face {
+  font-family: "Hurmit Nerd Font";
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url(../assets/fonts/hurmit-bold.woff2) format("woff2");
+}
+@font-face {
+  font-family: "Hurmit Nerd Font";
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+  src: url(../assets/fonts/hurmit-italic.woff2) format("woff2");
+}
+
+:root {
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+img { max-width: 100%; }
+[hidden]:not([hidden="until-found" i]) { display: none !important; }
+
+/* ============================================================================
+   CSC3058 revision — content + Terminal stylesheet (Neovim · Tokyo Night)
+   Terminal rules are written as :root:root … so they keep their specificity over the shared base rules.
+   ============================================================================ */
+
+
+/* ---------- Terminal tokens: Tokyo Night Day (light) ---------- */
+:root:root {
+  --tn-bg: #e1e2e7; --tn-bg-dark: #d0d5e3; --tn-hl: #c4c8da; --tn-float: #d0d5e3; --tn-gutter: #a8aecb; --tn-dark3: #8990b3; --tn-dark5: #68709a;
+  --tn-fg: #3760bf; --tn-fg-dark: #6172b0; --tn-comment: #848cb5; --tn-border-hl: #2496ac; --tn-visual: #b7c1e3;
+  --tn-blue: #2e7de9; --tn-cyan: #007197; --tn-blue1: #188092; --tn-magenta: #9854f1; --tn-purple: #7847bd; --tn-orange: #b15c00; --tn-yellow: #8c6c3e; --tn-green: #587539; --tn-teal: #118c74; --tn-red: #f52a65;
+  --tn-on: #e1e2e7;
+}
+@media (prefers-color-scheme: dark) { :root:root:not([data-theme="light"]) {
+  --tn-bg: #1a1b26; --tn-bg-dark: #16161e; --tn-hl: #292e42; --tn-float: #16161e; --tn-gutter: #3b4261; --tn-dark3: #545c7e; --tn-dark5: #737aa2;
+  --tn-fg: #c0caf5; --tn-fg-dark: #a9b1d6; --tn-comment: #565f89; --tn-border-hl: #27a1b9; --tn-visual: #283457;
+  --tn-blue: #7aa2f7; --tn-cyan: #7dcfff; --tn-blue1: #2ac3de; --tn-magenta: #bb9af7; --tn-purple: #9d7cd8; --tn-orange: #ff9e64; --tn-yellow: #e0af68; --tn-green: #9ece6a; --tn-teal: #1abc9c; --tn-red: #f7768e;
+  --tn-on: #15161e;
+} }
+:root:root[data-theme="dark"] {
+  --tn-bg: #1a1b26; --tn-bg-dark: #16161e; --tn-hl: #292e42; --tn-float: #16161e; --tn-gutter: #3b4261; --tn-dark3: #545c7e; --tn-dark5: #737aa2;
+  --tn-fg: #c0caf5; --tn-fg-dark: #a9b1d6; --tn-comment: #565f89; --tn-border-hl: #27a1b9; --tn-visual: #283457;
+  --tn-blue: #7aa2f7; --tn-cyan: #7dcfff; --tn-blue1: #2ac3de; --tn-magenta: #bb9af7; --tn-purple: #9d7cd8; --tn-orange: #ff9e64; --tn-yellow: #e0af68; --tn-green: #9ece6a; --tn-teal: #1abc9c; --tn-red: #f7768e;
+  --tn-on: #15161e;
+}
+:root:root {
+  --pane: var(--tn-bg); --group: var(--tn-bg); --side: var(--tn-bg-dark); --bar: var(--tn-bg-dark);
+  --bg: var(--tn-bg); --panel: var(--tn-bg); --panel-solid: var(--tn-bg-dark); --raised: var(--tn-hl);
+  --fg: var(--tn-fg); --muted: var(--tn-fg-dark); --faint: var(--tn-comment); --border: var(--tn-gutter); --border-strong: var(--tn-dark3);
+  --fill: var(--tn-hl); --fill2: var(--tn-bg-dark);
+  --accent: var(--tn-blue); --accent-sel: var(--tn-blue); --accent-soft: color-mix(in srgb, var(--tn-blue) 14%, transparent); --accent-fg: var(--tn-on);
+  --ok: var(--tn-green); --ok-soft: color-mix(in srgb, var(--tn-green) 14%, transparent); --warn: var(--tn-yellow); --warn-soft: color-mix(in srgb, var(--tn-yellow) 14%, transparent); --bad: var(--tn-red); --bad-soft: color-mix(in srgb, var(--tn-red) 13%, transparent);
+  --c-slides: var(--tn-blue); --c-lecture: var(--tn-magenta); --c-text: var(--tn-green); --c-bg: var(--tn-comment); --c-canvas: var(--tn-orange);
+  --c-blue: var(--tn-blue); --c-cyan: var(--tn-cyan); --c-green: var(--tn-green); --c-orange: var(--tn-orange); --c-magenta: var(--tn-magenta); --c-red: var(--tn-red); --c-yellow: var(--tn-yellow); --c-comment: var(--tn-comment); --c-teal: var(--tn-teal);
+  --code-bg: var(--tn-bg-dark); --row-alt: color-mix(in srgb, var(--tn-hl) 45%, transparent); --sel: var(--tn-visual); --hl: color-mix(in srgb, var(--tn-yellow) 25%, transparent);
+  --shadow: none; --shadow-lg: 0 12px 40px rgba(0,0,0,.35);
+  --font: "Hurmit Nerd Font", "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; --font-display: var(--font); --mono: var(--font);
+  --radius: 0px; --radius-sm: 0px;
+}
+
+/* ============================== base ============================== */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--pane); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+:root:root body { overflow: hidden; }
+:root:root body { font-size: 13.5px; line-height: 1.62; letter-spacing: 0; font-variant-ligatures: none; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 1px; }
+:root:root :focus-visible { outline: 1px solid var(--tn-orange); outline-offset: 0; }
+code, kbd, .mono { font-family: var(--mono); font-size: .9em; }
+code { background: var(--code-bg); padding: .1em .38em; border-radius: 5px; }
+:root:root code { border-radius: 0; background: transparent; color: var(--tn-green); padding: 0; }
+:root:root code::before, :root:root code::after { content: "`"; color: var(--tn-comment); }
+:root:root .nomark code::before, :root:root .nomark code::after, :root:root td code::before, :root:root td code::after { content: none; }
+kbd { display: inline-block; min-width: 1.6em; text-align: center; border: .5px solid var(--border-strong); box-shadow: 0 1px 0 var(--border-strong); border-radius: 5px; padding: 0 .4em; font-size: .82em; background: var(--panel-solid); line-height: 1.6; }
+:root:root kbd { border-radius: 0; box-shadow: none; background: var(--tn-hl); border: 0; color: var(--tn-orange); }
+h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.25; margin: 0; text-wrap: balance; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.katex { font-size: 1.07em; }
+.katex-display { margin: .35em 0; overflow-x: auto; overflow-y: hidden; padding: .2em 0; }
+::selection { background: var(--sel); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+.is-hidden, [hidden] { display: none !important; }
+
