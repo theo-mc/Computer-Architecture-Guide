@@ -1,12 +1,14 @@
 # CSC3058 Architecture Notes
 
-Static Svelte 5 + Vite rewrite of the CSC3058 revision notes, formula visualisers, labs, and mock test. KaTeX and all fonts (`Hurmit Nerd Font` and `JetBrains Mono`) are bundled locally for full offline use.
+Static Svelte 5 + Vite rewrite of the CSC3058 revision notes, formula visualisers, labs, and mock test. KaTeX and the `Hurmit Nerd Font` are bundled locally for full offline use (`JetBrains Mono` is only a system fallback in the font stack).
 
 ## Project structure
 
 ```text
 .
 ├── index.html                  # App shell + anti-flash theme script
+├── vite.config.js              # Svelte plugin, `@` -> `src` alias, KaTeX woff2-only trim
+├── CSC3058-Architecture-Notes.html  # Pre-built single-file copy of the notes
 ├── src/
 │   ├── main.js                 # Mounts App into #mount
 │   ├── App.svelte              # Shell layout, router view, global Vim keybindings
@@ -24,18 +26,16 @@ Static Svelte 5 + Vite rewrite of the CSC3058 revision notes, formula visualiser
 │   │   └── questions/          # Practice question banks (01..23 + overlays)
 │   ├── stores/                 # Svelte 5 rune stores (app, router, vim, notify)
 │   ├── utils/                  # Pure logic, MIPS/pipeline engines, SVG/math/layout helpers
-│   └── lib/components/
-│       ├── ui/                 # shadcn-svelte Dialog & Button components
-│       ├── chrome/             # TabBar, Sidebar, StatusLine, CmdPalette, FinderModal, etc.
+│   └── components/
+│       ├── chrome/             # TabBar, Sidebar, StatusLine, CmdPalette, FinderModal, Modal, HelpModal, etc.
 │       ├── content/            # BlockRenderer, QuestionCard, StepsList, ToolSlot, etc.
 │       ├── pages/              # Home, Topic, Formulas, Labs, MockTest, Settings, Locked
-│       └── tools/              # Interactive calculators, simulators, and labs + ToolHost
-├── Dockerfile                  # Multi-stage Node build -> nginx static serve
-├── nginx.conf                  # Gzip, static asset caching, SPA fallback
-├── docker-compose.yml          # Service definition with ${PORT:-8080}
-├── start.sh                    # Build and start container in background
-└── stop.sh                     # Stop and remove container
+│       └── tools/              # Interactive calculators, simulators, and labs
+│                               #   ToolHost lazy-loads each tool; ToolShell is the shared layout
+└── dist/                       # Build output (git-ignored)
 ```
+
+Imports use the `@` alias for `src/` (e.g. `@/utils/math.js`).
 
 ## Development
 
@@ -51,22 +51,4 @@ npm run build
 npm run preview
 ```
 
-## Docker
-
-Start (default port `8080`):
-
-```bash
-./start.sh
-```
-
-Start on a custom port:
-
-```bash
-PORT=3000 ./start.sh
-```
-
-Stop:
-
-```bash
-./stop.sh
-```
+The build output in `dist/` is fully static and can be served by any static file host.
