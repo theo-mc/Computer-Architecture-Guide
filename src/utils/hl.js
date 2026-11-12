@@ -131,8 +131,13 @@ export function decorate(el) {
       c.classList.add('asm');
     }
   });
-  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
-    acceptNode: (n) => (!n.parentElement || n.parentElement.closest(SKIP)) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+  if (el.closest && el.closest(SKIP)) return;
+  // Walk elements and text together; rejecting a SKIP element prunes its whole subtree.
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
+    acceptNode: (n) =>
+      n.nodeType === 3
+        ? /[\d$]/.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP
+        : n.matches(SKIP) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_SKIP
   });
   const nodes = [];
   let n;

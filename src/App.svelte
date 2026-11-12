@@ -1,31 +1,32 @@
 <script>
   import { untrack } from 'svelte';
-  import { app } from '$stores/app.svelte.js';
-  import { router } from '$stores/router.svelte.js';
-  import { vim } from '$stores/vim.svelte.js';
-  import { notify } from '$stores/notify.svelte.js';
-  import { applyV3Layout } from '$utils/layout.js';
+  import { app } from '@/stores/app.svelte.js';
+  import { router } from '@/stores/router.svelte.js';
+  import { vim } from '@/stores/vim.svelte.js';
+  import { notify } from '@/stores/notify.svelte.js';
+  import { applyV3Layout } from '@/utils/layout.js';
+  import { afterMath } from '@/utils/math.js';
 
-  import TabBar from '$lib/components/chrome/TabBar.svelte';
-  import Sidebar from '$lib/components/chrome/Sidebar.svelte';
-  import WinBar from '$lib/components/chrome/WinBar.svelte';
-  import TouchBar from '$lib/components/chrome/TouchBar.svelte';
-  import StatusLine from '$lib/components/chrome/StatusLine.svelte';
-  import NotifyToast from '$lib/components/chrome/NotifyToast.svelte';
-  import WhichKey from '$lib/components/chrome/WhichKey.svelte';
-  import CmdPalette from '$lib/components/chrome/CmdPalette.svelte';
-  import FinderModal from '$lib/components/chrome/FinderModal.svelte';
-  import HelpModal from '$lib/components/chrome/HelpModal.svelte';
+  import TabBar from '@/components/chrome/TabBar.svelte';
+  import Sidebar from '@/components/chrome/Sidebar.svelte';
+  import WinBar from '@/components/chrome/WinBar.svelte';
+  import TouchBar from '@/components/chrome/TouchBar.svelte';
+  import StatusLine from '@/components/chrome/StatusLine.svelte';
+  import NotifyToast from '@/components/chrome/NotifyToast.svelte';
+  import WhichKey from '@/components/chrome/WhichKey.svelte';
+  import CmdPalette from '@/components/chrome/CmdPalette.svelte';
+  import FinderModal from '@/components/chrome/FinderModal.svelte';
+  import HelpModal from '@/components/chrome/HelpModal.svelte';
 
-  import HomePage from '$lib/components/pages/HomePage.svelte';
-  import TopicPage from '$lib/components/pages/TopicPage.svelte';
-  import FormulasPage from '$lib/components/pages/FormulasPage.svelte';
-  import LabsPage from '$lib/components/pages/LabsPage.svelte';
-  import LabDetailPage from '$lib/components/pages/LabDetailPage.svelte';
-  import MockTestPage from '$lib/components/pages/MockTestPage.svelte';
-  import SettingsPage from '$lib/components/pages/SettingsPage.svelte';
-  import LockedPage from '$lib/components/pages/LockedPage.svelte';
-  import NotFoundPage from '$lib/components/pages/NotFoundPage.svelte';
+  import HomePage from '@/components/pages/HomePage.svelte';
+  import TopicPage from '@/components/pages/TopicPage.svelte';
+  import FormulasPage from '@/components/pages/FormulasPage.svelte';
+  import LabsPage from '@/components/pages/LabsPage.svelte';
+  import LabDetailPage from '@/components/pages/LabDetailPage.svelte';
+  import MockTestPage from '@/components/pages/MockTestPage.svelte';
+  import SettingsPage from '@/components/pages/SettingsPage.svelte';
+  import LockedPage from '@/components/pages/LockedPage.svelte';
+  import NotFoundPage from '@/components/pages/NotFoundPage.svelte';
 
   let mainEl = $state(null);
 
@@ -146,7 +147,7 @@
       }
     });
 
-    requestAnimationFrame(() => {
+    afterMath(() => {
       applyV3Layout(mainEl);
       vim.buildLines(mainEl);
     });
@@ -177,8 +178,11 @@
     });
   });
 
+  let relayoutRaf = 0;
   function relayoutSoon() {
-    requestAnimationFrame(() => {
+    if (relayoutRaf) return;
+    relayoutRaf = requestAnimationFrame(() => {
+      relayoutRaf = 0;
       applyV3Layout(mainEl);
       vim.buildLines(mainEl);
     });
@@ -248,7 +252,7 @@
     }
     const ln = e.target.closest('.ln');
     if (ln) vim.focusCursorOnElement(ln);
-    if (e.target.closest('button, summary, [data-act], .seg button')) {
+    if (!e.target.closest('.tool, .fx-slot') && e.target.closest('button, summary, [data-act], .seg button')) {
       relayoutSoon();
     }
   }

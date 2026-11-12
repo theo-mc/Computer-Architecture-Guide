@@ -77,7 +77,8 @@ function proseOf(k) {
   return k.matches('.prose') ? k : k.querySelector(':scope > .prose');
 }
 
-function layoutBody(sb, wide) {
+// Phase 1 (writes): reset a step body and, if wide, mark candidates as half-width so they can be measured.
+function prepBody(sb, wide) {
   const kids = Array.from(sb.children);
   const cand = kids.map((k) => k.matches(HALF));
   kids.forEach((k) => {
@@ -86,7 +87,7 @@ function layoutBody(sb, wide) {
   });
   all('.cols2', sb).forEach((p) => p.classList.remove('cols2'));
   sb.removeAttribute('data-cols');
-  if (!wide || !sb.getClientRects().length) return;
+  if (!wide) return null;
   sb.setAttribute('data-cols', '2');
   kids.forEach((k, i) => {
     if (cand[i]) {
@@ -94,7 +95,17 @@ function layoutBody(sb, wide) {
       k.style.alignSelf = 'start';
     }
   });
-  const H = kids.map((k, i) => (cand[i] ? k.offsetHeight : 0));
+  return { kids, cand };
+}
+
+// Phase 2 (reads only): natural heights.
+function measureBody(st) {
+  return st.kids.map((k, i) => (st.cand[i] ? k.offsetHeight : 0));
+}
+
+// Phase 3 (writes): pair blocks up.
+function applyBody(st, H) {
+  const { kids, cand } = st;
   kids.forEach((k) => {
     k.style.alignSelf = '';
   });
@@ -144,9 +155,30 @@ export function applyV3Layout(mainEl) {
   const cw = contentWidth(page);
   const wide = cw >= LG;
   page.setAttribute('data-w', wide ? 'lg' : cw >= 700 ? 'md' : 'sm');
-  all('.step:not(.folded) > .step-body', page).forEach((sb) => layoutBody(sb, wide));
+  const bodies = all('.step:not(.folded) > .step-body', page);
+  const states = bodies.map((sb) => prepBody(sb, wide));
+  if (!wide) {
+    const ql = page.querySelector('#qlist');
+    if (ql) layoutQuestionList(ql, false);
+    return;
+  }
+  const live = [];
+  states.forEach((st, i) => {
+    if (!st) return;
+    if (bodies[i].getClientRects().length) live.push(st);
+    else {
+      // hidden (e.g. inside a closed <details>): leave it in single-column form
+      bodies[i].removeAttribute('data-cols');
+      st.kids.forEach((k) => {
+        k.removeAttribute('data-lay');
+        k.style.alignSelf = '';
+      });
+    }
+  });
+  const heights = live.map(measureBody); // one layout for all steps
+  live.forEach((st, i) => applyBody(st, heights[i]));
   const ql = page.querySelector('#qlist');
-  if (ql) layoutQuestionList(ql, wide);
+  if (ql) layoutQuestionList(ql, true);
 }
 
 /* ---------- slot height session cache ---------- */

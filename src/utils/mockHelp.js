@@ -1,4 +1,4 @@
-import { TOPICS, FORMULAS } from '$data/index.js';
+import { TOPICS, FORMULAS } from '@/data/index.js';
 import { esc } from './html.js';
 import { needFor, stepsHTML } from './refs.js';
 

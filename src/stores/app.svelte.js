@@ -1,4 +1,4 @@
-import { TOPICS } from '$data/index.js';
+import { TOPICS } from '@/data/index.js';
 import { notify } from './notify.svelte.js';
 
 const KEY = 'csc3058-revision-v1';

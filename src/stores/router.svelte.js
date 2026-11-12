@@ -1,5 +1,5 @@
-import { TOPICS, LOCKED, LABS, CHAPTERS, byTopicId } from '$data/index.js';
-import { pad2 } from '$utils/html.js';
+import { TOPICS, LOCKED, LABS, CHAPTERS, byTopicId } from '@/data/index.js';
+import { pad2 } from '@/utils/html.js';
 
 function readHash() {
   if (typeof window === 'undefined') return 'home';

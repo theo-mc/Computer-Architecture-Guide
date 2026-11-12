@@ -26,6 +26,7 @@ class VimStore {
   winStep = $state('');
 
   curLines = [];
+  litCursor = -1;
   scrollLock = 0;
   gutRaf = 0;
   pctRaf = 0;
@@ -69,6 +70,7 @@ class VimStore {
         !(el.matches('.fx-card') && el.closest('.step-body')) &&
         !(el.matches('.card.list') && el.querySelector('.labrow'))
     );
+    this.litCursor = -1;
     this.curLines.forEach((el, i) => {
       el.classList.add('ln');
       el.dataset.n = String(i + 1);
@@ -107,13 +109,21 @@ class VimStore {
     });
   }
 
+  // Only lines near the cursor are on screen, so only those get (re)numbered.
   numberLines() {
     const rel = app.s.rel;
     const c = this.cursor;
-    this.curLines.forEach((el, i) => {
-      el.dataset.rel = rel ? (i === c ? String(i + 1) : String(Math.abs(i - c))) : String(i + 1);
-      el.classList.toggle('cl', i === c);
-    });
+    const lines = this.curLines;
+    const lo = Math.max(0, c - 70);
+    const hi = Math.min(lines.length, c + 70);
+    if (this.litCursor >= 0 && this.litCursor !== c) lines[this.litCursor]?.classList.remove('cl');
+    for (let i = lo; i < hi; i++) {
+      const v = rel ? (i === c ? i + 1 : Math.abs(i - c)) : i + 1;
+      const el = lines[i];
+      if (el.dataset.rel !== String(v)) el.dataset.rel = String(v);
+    }
+    lines[c]?.classList.add('cl');
+    this.litCursor = c;
   }
 
   setCursor(i, noScroll = false, center = false, mainEl = null) {

@@ -167,3 +167,9 @@ body.tree-focus #sidebar { box-shadow: inset 0 2px 0 var(--tn-orange); }
 .help-title { position: sticky; top: -18px; margin: -26px auto 0; width: max-content; background: var(--tn-float); color: var(--tn-yellow); font-size: 11.5px; padding: 0 4px; }
 .help-h { display: flex; justify-content: space-between; align-items: center; }
 
+
+/* Modal (Modal.svelte) */
+.modal-bg { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; }
+.modal-bg.high { align-items: flex-start; padding-top: 22vh; }
+.modal-panel { display: grid; justify-items: center; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

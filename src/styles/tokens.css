@@ -73,7 +73,7 @@ img { max-width: 100%; }
 
 /* ============================== base ============================== */
 *, *::before, *::after { box-sizing: border-box; }
-html, body { height: 100%; margin: 0; }
+html, body, #mount { height: 100%; margin: 0; }
 body { background: var(--pane); color: var(--fg); font-family: var(--font); font-size: 14px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
 :root:root body { overflow: hidden; }
 :root:root body { font-size: 13.5px; line-height: 1.62; letter-spacing: 0; font-variant-ligatures: none; }
